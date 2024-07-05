@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Req } from '@nestjs/common';
 import { UsersEntity } from 'src/app/users/users.entity';
 import { UsersService } from 'src/app/users/users.service';
 import { compareSync } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Injectable()
 export class AuthService {
@@ -11,6 +12,7 @@ export class AuthService {
     private readonly jwtService: JwtService
   ) { }
 
+  @ApiProperty()
   async login(user) {
     const payload = { sub: user.id, email: user.email }
 

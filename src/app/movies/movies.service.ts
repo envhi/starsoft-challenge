@@ -1,16 +1,20 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { FindOneOptions, Repository } from 'typeorm';
 import { MoviesEntity } from './movies.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class MoviesService {
   constructor(
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     @InjectRepository(MoviesEntity)
-    private readonly moviesRepository: Repository<MoviesEntity>,
+    private readonly moviesRepository: Repository<MoviesEntity>
   ) { }
+
 
   async findAll() {
     return await this.moviesRepository.find({
@@ -33,9 +37,11 @@ export class MoviesService {
       if (movieExists) {
         throw new Error('Movie title already registered');
       } else {
+        await this.cacheManager.reset();
         const movie = this.moviesRepository.create(data)
         return await this.moviesRepository.save(movie)
       }
+
     } catch (error) {
       throw new BadRequestException(error.message)
     }

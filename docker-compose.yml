@@ -12,6 +12,12 @@ services:
     ports:
       - '5432:5432'
 
+  redis:
+    image: redis
+    command: redis-server
+    ports:
+      - "6379:6379"
+
   app:
     build:
       context: .
@@ -23,5 +29,6 @@ services:
       - '3000:3000'
     depends_on:
       - db
+      - redis
     volumes:
       - ./src:/app/src

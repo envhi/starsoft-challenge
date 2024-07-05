@@ -1,15 +1,17 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { FindOneOptions, Repository } from 'typeorm';
 import { UsersEntity } from './users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class UsersService {
   constructor(
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     @InjectRepository(UsersEntity)
-    private readonly usersRepository: Repository<UsersEntity>,
+    private readonly usersRepository: Repository<UsersEntity>
   ) { }
 
   async findAll() {
@@ -34,6 +36,7 @@ export class UsersService {
         throw new Error('E-mail already registered');
       } else {
         const user = this.usersRepository.create(data)
+        await this.cacheManager.reset();
         return await this.usersRepository.save(user)
       }
     } catch (error) {
